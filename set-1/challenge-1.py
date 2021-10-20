@@ -23,6 +23,23 @@ This challenge consists of converting a HEX encoded
 string into a BASE64 encoded string
 """
 
+def byte_to_bits ( input ):
+
+    output = ""
+
+    for x in input:
+        
+        byte = "0" + bin ( x )[2:]
+
+        while len ( byte ) < 8:
+
+            byte = "0" + byte
+
+        # concatenates byte
+        output += byte
+    
+    return output
+
 def main ( input ):
 
     base64 = [
@@ -37,20 +54,10 @@ def main ( input ):
     ]
 
     input_bytes = bytes.fromhex ( input )
-    input_bitstring = ""
+    input_bitstring = byte_to_bits ( input_bytes )
     output = ""
 
-    # Converts the bytes into a bitstring and concatenates them
-    for x in input_bytes:
-
-        byte = "0" + bin ( x )[2:]
-
-        while len ( byte ) < 8:
-
-            byte = "0" + byte
-
-        # concatenates byte
-        input_bitstring += byte   
+    # Converts the bytes into a bitstring and concatenates them 
 
     # Converts the bytes into 6-bit values which can then be
     # Convered into ASCII characters based on the Base64 table
