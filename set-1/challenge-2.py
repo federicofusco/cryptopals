@@ -23,41 +23,12 @@ This challenge consists of performing an XOR operation
 on a given HEX encoded string with a set number
 """
 
-def byte_to_bits ( input ):
-
-    output = ""
-
-    for x in input:
-        
-        byte = "0" + bin ( x )[2:]
-
-        while len ( byte ) < 8:
-
-            byte = "0" + byte
-
-        # concatenates byte
-        output += byte
-    
-    return output
-
-
 def main ( input ):
 
     n = "686974207468652062756c6c277320657965"
-    a_bitstring = byte_to_bits ( bytes.fromhex ( input ) )
-    b_bitstring = byte_to_bits ( bytes.fromhex ( n ) )
-    output_bitstring = ""
+    x = bytes.fromhex ( input )
+    y = bytes.fromhex ( n )
 
-    for x in range ( len ( a_bitstring ) ):
+    return bytes ( a ^ b for a, b in zip ( x, y ) )
 
-        if int ( a_bitstring[x] ) + int ( b_bitstring[x] ) == 1:
-
-            output_bitstring += "1"
-
-        else:
-
-            output_bitstring += "0"
-
-    return hex ( int ( output_bitstring, 2 ) )[2:]
-
-print ( main ( sys.argv[1] ) )
+print ( hex ( int.from_bytes ( main ( sys.argv[1] ), "big" ) )[2:] )
