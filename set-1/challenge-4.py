@@ -10,8 +10,12 @@ if len ( sys.argv ) != 2:
     exit ()
 
 """
-This challenge consists of performing an XOR operation
-on a given HEX encoded string with a set number
+This challenge consists of brute-forcing all 
+the possible signle byte keys which may have
+been used to encrypt a series of payloads in 
+a given file. The output should be the one 
+payload which is actual English, while ignoring
+the rest which are just noise
 """
 
 def xor ( x, y ):
