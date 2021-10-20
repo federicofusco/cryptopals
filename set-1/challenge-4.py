@@ -9,25 +9,15 @@ if len ( sys.argv ) != 2:
     print ( "Incorrect argument length: Expected 1 arguments but was given {}".format ( len ( sys.argv ) - 1 ) )
     exit ()
 
-# Checks that the inputs are both valid hexadecimal strings
-for x in sys.argv[1]:
-
-    if x not in "0123456789abcdef":
-
-        # Invalid hex string
-        print ( "Invalid input: Expected valid hex string as first argument" )
-        exit ()
-
 """
-This challenge consists of brute-forcing all 
-the possible signle byte keys which may have
-been used to encrypt the payload
+This challenge consists of performing an XOR operation
+on a given HEX encoded string with a set number
 """
 
 def xor ( x, y ):
     return bytes ( a ^ b for a, b in zip ( x, y ) )
 
-def main ( input ):
+def find_key ( input ):
 
     # This dict contains the frequency of 
     # Each letter in the English alphabet
@@ -102,4 +92,19 @@ def main ( input ):
         "probability": plaintexts[max ( plaintexts, key=plaintexts.get )]
     }
 
-print ( main ( sys.argv[1] ) )
+def main ( input_path ):
+
+    input_file = open ( input_path, "r" )
+    input = input_file.readlines ()
+
+    # Strips the newline character
+    plaintexts = {}
+    for ciphertext in input:
+
+        data = find_key ( ciphertext.strip () )
+
+        plaintexts[ data["plaintext"] ] = data["probability"]
+
+    print ( max ( plaintexts, key=plaintexts.get ) )
+
+main ( sys.argv[1] )
