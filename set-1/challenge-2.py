@@ -19,8 +19,7 @@ for x in sys.argv[1]:
         exit ()
 
 """
-This challenge consists of performing an XOR operation
-on a given HEX encoded string with a set number
+CHALLENGE 2
 """
 
 def main ( input ):

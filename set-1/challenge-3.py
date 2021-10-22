@@ -19,9 +19,7 @@ for x in sys.argv[1]:
         exit ()
 
 """
-This challenge consists of brute-forcing all 
-the possible signle byte keys which may have
-been used to encrypt the payload
+CHALLENGE 3
 """
 
 def xor ( x, y ):

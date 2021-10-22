@@ -19,8 +19,7 @@ for x in sys.argv[1]:
         exit ()
 
 """
-This challenge consists of converting a HEX encoded
-string into a BASE64 encoded string
+CHALLENGE 1
 """
 
 def byte_to_bits ( input ):
