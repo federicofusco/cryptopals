@@ -1,22 +1,22 @@
 #!/usr/bin/python3
 
 import sys
+import os
 import base64
 
-# Checks that the argument length is correct
-if len ( sys.argv ) != 2:
-    
-    # Incorrect argument length
-    print ( "Incorrect argument length: Expected 1 argument but was given {}".format ( len ( sys.argv ) - 1 ) )
-    exit ()
-
 """
-CHALLENGE 6
+CHALLENGE 6:
+
+Breaks a BASE64 encoded string which has been 
+encrypted with repeated XOR and has a keysize 
+between 1 and 40 bytes
 """
 
+# XORs two bytes
 def xor ( x, y ):
     return bytes ( a ^ b for a, b in zip ( x, y ) )
 
+# Calculates the hamming distance between two bytes
 def hamming_distance ( x, y ):    
 
     distance = 0
@@ -25,6 +25,8 @@ def hamming_distance ( x, y ):
 
     return distance
 
+# Calculates the probability that a given plaintext is 
+# Written in English
 def calculate_probability ( plaintext ):
 
     # This dict contains the frequency of 
@@ -66,6 +68,9 @@ def calculate_probability ( plaintext ):
 
     return probability
 
+# Loops through each possible key
+# There are only 256 possibilities since we
+# Know that the key is only 1 byte long
 def find_key ( ciphertext ):
 
     keys = {}
@@ -100,7 +105,7 @@ def find_key ( ciphertext ):
         "probability": plaintexts[max ( plaintexts, key=plaintexts.get )]
     }       
 
-def main ( input_path ):
+def main ( input_path = os.getcwd () + "/challenge-6.txt" ):
 
     key = bytearray ()
 
@@ -159,4 +164,8 @@ def main ( input_path ):
     return max ( plaintexts, key=plaintexts.get )
 
 
-print ( main ( sys.argv[1] ) )
+if len ( sys.argv ) > 1:
+    print ( main ( sys.argv[1] ) )
+
+else:
+    print ( main () )

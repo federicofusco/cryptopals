@@ -2,31 +2,31 @@
 
 import sys
 
-# Checks that the argument length is correct
-if len ( sys.argv ) != 2:
-    
-    # Incorrect argument length
-    print ( "Incorrect argument length: Expected 1 arguments but was given {}".format ( len ( sys.argv ) - 1 ) )
-    exit ()
+# Checks that the input is a valid hexadecimal strings
+if len ( sys.argv ) > 1:
+    for x in sys.argv[1]:
 
-# Checks that the inputs are both valid hexadecimal strings
-for x in sys.argv[1]:
+        if x not in "0123456789abcdef":
 
-    if x not in "0123456789abcdef":
-
-        # Invalid hex string
-        print ( "Invalid input: Expected valid hex string as first argument" )
-        exit ()
+            # Invalid hex string
+            print ( "Invalid input: Expected valid hex string as first argument" )
+            exit ()
 
 """
-CHALLENGE 3
+CHALLENGE 3:
+
+Decrypts a message encrypted with a single
+byte XOR
 """
 
+# XORs two bytes
 def xor ( x, y ):
     return bytes ( a ^ b for a, b in zip ( x, y ) )
 
-def main ( input ):
-
+# Calculates the probability that a given plaintext is 
+# Written in English
+def calculate_probability ( plaintext, ciphertext ):
+    
     # This dict contains the frequency of 
     # Each letter in the English alphabet
     frequency = {
@@ -45,6 +45,38 @@ def main ( input ):
         'y': 1.974,    'z': 0.074
     }
 
+    # Calculates the plaintext's probability
+    probability = 0.0
+    for y in plaintext:
+
+        char = chr ( y )
+        
+        if char.isalpha ():
+
+            try:
+                if char == char.lower ():
+                    probability += frequency[char]
+                else:
+
+                    # Accounts for uppercase characters
+                    probability += frequency[char.lower ()] * 0.75
+            except: 
+
+                continue
+
+    probability /= len ( ciphertext )
+
+    for y in plaintext:
+
+        char = chr ( y )
+
+        if not char.isalpha ():
+            probability *= 0.90
+    
+    return probability
+
+def main ( input = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736" ):
+
     # Converts the HEX encoded ciphertext into raw bytes
     ciphertext = bytes.fromhex ( input )
 
@@ -62,42 +94,16 @@ def main ( input ):
         # Performs XOR operation on ciphertext with the current key
         possible_plaintext = xor ( ciphertext, key )
 
-        # Calculates the plaintext's probability
-        probability = 0.0
-        for y in possible_plaintext:
-
-            char = chr ( y )
-            
-            if char.isalpha ():
-
-                try:
-                    if char == char.lower ():
-                        probability += frequency[char]
-                    else:
-
-                        # Accounts for uppercase characters
-                        probability += frequency[char.lower ()] * 0.75
-                except: 
-
-                    continue
-
-
-        probability /= len ( ciphertext )
-
-        for y in possible_plaintext:
-
-            char = chr ( y )
-
-            if not char.isalpha ():
-                probability *= 0.90
+        # Calculates the probability the the plaintext is correct
+        probability = calculate_probability ( possible_plaintext, ciphertext )
 
         keys[key] = probability
         plaintexts[possible_plaintext] = probability
 
-    return {
-        "plaintext": max ( plaintexts, key=plaintexts.get ),
-        "key": max ( keys, key=keys.get )[0],
-        "probability": plaintexts[max ( plaintexts, key=plaintexts.get )]
-    }
+    return max ( plaintexts, key=plaintexts.get )
 
-print ( main ( sys.argv[1] ) )
+if len ( sys.argv ) > 1:
+    print ( main ( sys.argv[1] ) )
+
+else:
+    print ( main () )

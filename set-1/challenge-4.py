@@ -1,23 +1,24 @@
 #!/usr/bin/python3
 
 import sys
-
-# Checks that the argument length is correct
-if len ( sys.argv ) != 2:
-    
-    # Incorrect argument length
-    print ( "Incorrect argument length: Expected 1 arguments but was given {}".format ( len ( sys.argv ) - 1 ) )
-    exit ()
+import os
 
 """
-CHALLENGE 4
+CHALLENGE 4:
+
+Decrypts a set of single byte XOR ciphertexts in a
+given file and returns the most likely to be written
+in English
 """
 
+# XORs two bytes
 def xor ( x, y ):
     return bytes ( a ^ b for a, b in zip ( x, y ) )
 
-def find_key ( input ):
-
+# Calculates the probability that a given plaintext is 
+# Written in English
+def calculate_probability ( plaintext, ciphertext ):
+    
     # This dict contains the frequency of 
     # Each letter in the English alphabet
     frequency = {
@@ -35,6 +36,41 @@ def find_key ( input ):
         'w': 2.361,    'x': 0.150,
         'y': 1.974,    'z': 0.074
     }
+
+    # Calculates the plaintext's probability
+    probability = 0.0
+    for y in plaintext:
+
+        char = chr ( y )
+        
+        if char.isalpha ():
+
+            try:
+                if char == char.lower ():
+                    probability += frequency[char]
+                else:
+
+                    # Accounts for uppercase characters
+                    probability += frequency[char.lower ()] * 0.75
+            except: 
+
+                continue
+
+    probability /= len ( ciphertext )
+
+    for y in plaintext:
+
+        char = chr ( y )
+
+        if not char.isalpha ():
+            probability *= 0.90
+    
+    return probability
+
+# Loops through each possible key
+# There are only 256 possibilities since we
+# Know that the key is only 1 byte long
+def find_key ( input ):
 
     # Converts the HEX encoded ciphertext into raw bytes
     ciphertext = bytes.fromhex ( input )
@@ -54,33 +90,7 @@ def find_key ( input ):
         possible_plaintext = xor ( ciphertext, key )
 
         # Calculates the plaintext's probability
-        probability = 0.0
-        for y in possible_plaintext:
-
-            char = chr ( y )
-            
-            if char.isalpha ():
-
-                try:
-                    if char == char.lower ():
-                        probability += frequency[char]
-                    else:
-
-                        # Accounts for uppercase characters
-                        probability += frequency[char.lower ()] * 0.75
-                except: 
-
-                    continue
-
-
-        probability /= len ( ciphertext )
-
-        for y in possible_plaintext:
-
-            char = chr ( y )
-
-            if not char.isalpha ():
-                probability *= 0.90
+        probability = calculate_probability ( possible_plaintext, ciphertext )
 
         keys[key] = probability
         plaintexts[possible_plaintext] = probability
@@ -91,7 +101,7 @@ def find_key ( input ):
         "probability": plaintexts[max ( plaintexts, key=plaintexts.get )]
     }
 
-def main ( input_path ):
+def main ( input_path = os.getcwd () + "/challenge-4.txt" ):
 
     input_file = open ( input_path, "r" )
     input = input_file.readlines ()
@@ -104,6 +114,10 @@ def main ( input_path ):
 
         plaintexts[ data["plaintext"] ] = data["probability"]
 
-    print ( max ( plaintexts, key=plaintexts.get ) )
+    return max ( plaintexts, key=plaintexts.get )
 
-main ( sys.argv[1] )
+if len ( sys.argv ) > 1:
+    print ( main ( sys.argv[1] ) )
+
+else:
+    print ( main () )

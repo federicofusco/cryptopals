@@ -2,26 +2,23 @@
 
 import sys
 
-# Checks that the argument length is correct
-if len ( sys.argv ) != 2:
-    
-    # Incorrect argument length
-    print ( "Incorrect argument length: Expected 1 arguments but was given {}".format ( len ( sys.argv ) - 1 ) )
-    exit ()
-
 # Checks that the input is a valid hexadecimal string
-for x in sys.argv[1]:
+if len ( sys.argv ) > 1:
+    for x in sys.argv[1]:
 
-    if x not in "0123456789abcdef":
+        if x not in "0123456789abcdef":
 
-        # Invalid hex string
-        print ( "Invalid input: Expected valid hex string as first argument" )
-        exit ()
+            # Invalid hex string
+            print ( "Invalid input: Expected valid hex string as first argument" )
+            exit ()
 
 """
-CHALLENGE 1
+CHALLENGE 1:
+
+Converts HEX encoded string into a BASE64 encoded string
 """
 
+# Converts bytes into bitstrings
 def byte_to_bits ( input ):
 
     output = ""
@@ -39,7 +36,7 @@ def byte_to_bits ( input ):
     
     return output
 
-def main ( input ):
+def main ( input = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d" ):
 
     base64 = [
         "A", "B", "C", "D", "E", "F", "G", "H",
@@ -70,4 +67,8 @@ def main ( input ):
 
     return output
 
-print ( main ( sys.argv[1] ) )
+if len ( sys.argv ) > 1:
+    print ( main ( sys.argv[1] ) )
+
+else:
+    print ( main () )
