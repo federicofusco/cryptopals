@@ -7,42 +7,65 @@ import base64
 """
 CHALLENGE 6:
 
-Breaks a BASE64 encoded string which has been 
-encrypted with repeated XOR and has a keysize 
-between 1 and 40 bytes
+Breaks a BASE64 encoded string which has been encrypted with repeated
+XOR and has a keysize between 1 and 40 bytes
 """
 
-# XORs two bytes
-def xor ( x, y ):
-    return bytes ( a ^ b for a, b in zip ( x, y ) )
+
+def xor(x: bytes, y: bytes) -> bytes:
+    '''
+    Perform single byte xor and repeating key xor.
+    '''
+
+    if len(y) > len(x):
+        x, y = y, x
+
+    if len(y) == 1:
+        key = y[0]
+        return bytearray(a ^ key for a in x)
+
+    # Make y of same length as x by repeating it
+    y *= 1 + (len(x) // len(y))
+    y = y[:len(x)]
+
+    return bytearray(a ^ b for a, b in zip(x, y))
 
 # Calculates the hamming distance between two bytes
-def hamming_distance ( x, y ):    
+
+
+def hamming_distance(x: bytes, y: bytes) -> int:
+    '''
+    Compute the hamming distance between two byte buffers.
+    '''
+
+    assert len(x) == len(y), 'Input byte arrays have mismatching lengths {} and {}'.format(len(x), len(y))
 
     distance = 0
-    for z in xor ( bytes ( x ), bytes ( y ) ):
-        distance += bin ( z ).count ( "1" )
+    for z in xor(x, y):
+        distance += bin(z).count("1")
 
     return distance
 
-# Calculates the probability that a given plaintext is 
-# Written in English
-def calculate_probability ( plaintext ):
 
-    # This dict contains the frequency of 
+def calculate_probability(plaintext: str) -> float:
+    '''
+    Compute the probability of a text being written in plain english.
+    '''
+
+    # This dict contains the frequency of
     # Each letter in the English alphabet
     frequency = {
-        'a': 8.167,    'b': 1.492, 
+        'a': 8.167,    'b': 1.492,
         'c': 2.782,    'd': 4.253,
-        'e': 12.702,   'f': 2.228,    
+        'e': 12.702,   'f': 2.228,
         'g': 2.015,    'h': 6.094,
-        'i': 6.966,    'j': 0.153,    
+        'i': 6.966,    'j': 0.153,
         'k': 0.406,    'l': 4.025,
-        'm': 2.204,    'n': 6.749,    
+        'm': 2.204,    'n': 6.749,
         'o': 7.507,    'p': 1.929,
-        'q': 0.095,    'r': 5.987,    
+        'q': 0.095,    'r': 5.987,
         's': 6.327,    't': 9.056,
-        'u': 2.758,    'v': 0.978,    
+        'u': 2.758,    'v': 0.978,
         'w': 2.361,    'x': 0.150,
         'y': 1.974,    'z': 0.074
     }
@@ -51,121 +74,128 @@ def calculate_probability ( plaintext ):
     probability = 0.0
     for y in plaintext:
 
-        char = chr ( y )
-        
-        if char.isalpha ():
+        char = chr(y)
+
+        if char.isalpha():
 
             try:
-                if char == char.lower ():
+                if char == char.lower():
                     probability += frequency[char]
                 else:
 
                     # Accounts for uppercase characters
-                    probability += frequency[char.lower ()] * 0.75
-            except: 
+                    probability += frequency[char.lower()] * 0.75
+            except:
 
                 continue
 
     return probability
 
-# Loops through each possible key
-# There are only 256 possibilities since we
-# Know that the key is only 1 byte long
-def find_key ( ciphertext ):
 
-    keys = {}
-    plaintexts = {}
+def find_key_size(ciphertext: bytes, length_range=(1, 40)) -> tuple[int, dict]:
+    '''
+    Estimate the best key size for repeating key XOR, based on hamming distance.
+
+    Returns:
+        - best_size: the estimated key size
+        - probabilities: an ordered dictionary containing all key sizes' probabilities.
+    '''
+
+    probabilities = {}
+    for key_size in range(*length_range):
+
+        blocks = [ciphertext[x: x + key_size]
+                  for x in range(0, len(ciphertext), key_size)]
+
+        avg_distance = 0
+
+        # Exclude the last block from computation,
+        # because it may be shorter than keysize.
+        for i in range(len(blocks) - 2):
+            # Normalize distance by key_size
+            avg_distance += hamming_distance(blocks[i], blocks[i+1]) / key_size
+
+        avg_distance /= len(blocks) - 1
+
+        probabilities[key_size] = avg_distance
+
+    # Sort key lengths by probability.
+    # This only works in Python 3.7+
+    # learn more: https://stackoverflow.com/questions/613183
+    probabilities = dict(sorted(probabilities.items(),
+                         key=lambda item: item[1]))
+    best_size = next(iter(probabilities))
+
+    return best_size, probabilities
+
+
+def find_single_byte_xor_key(ciphertext: bytes) -> int:
+    '''
+    Estimate the single byte key by computing the message's probability of it being written in english.
+    '''
+
+    best_score = -1
+    best_key = -1
 
     # Loops through each possible key
     # There are only 256 possibilities since we
     # Know that the key is only 1 byte long
-    for x in range ( 256 ):
-
-        # Extends the key byte to be the same length as the ciphertext
-        key = bytes ([x]) * len ( ciphertext )
+    for x in range(256):
 
         # Performs XOR operation on ciphertext with the current key
-        possible_plaintext = xor ( ciphertext, key )
-
-        probability = calculate_probability ( possible_plaintext )
+        possible_plaintext = xor(ciphertext, bytes([x]))
+        probability = calculate_probability(possible_plaintext)
 
         for y in possible_plaintext:
+            char = chr(y)
 
-            char = chr ( y )
-
-            if not char.isalpha ():
+            if not char.isalpha():
                 probability *= 0.90
 
-        keys[key] = probability
-        plaintexts[possible_plaintext] = probability
+        if probability > best_score:
+            best_score = probability
+            best_key = x
 
-    return {
-        "plaintext": max ( plaintexts, key=plaintexts.get ),
-        "key": max ( keys, key=keys.get )[0],
-        "probability": plaintexts[max ( plaintexts, key=plaintexts.get )]
-    }       
-
-def main ( input_path = os.getcwd () + "/challenge-6.txt" ):
-
-    key = bytearray ()
-
-    # Decodes the payload
-    ciphertext = base64.b64decode ( open ( input_path, "r" ).read ().encode ( "ascii" ) )
-
-    # Loops through each possible keysize and calculates their probability
-    probability = {}
-    for keysize in range ( 1, 40 ):
-
-        # Breaks the ciphertext into blocks the size of the keysize
-        blocks = [ ciphertext [ x : x + keysize ] for x in range ( 0, len ( ciphertext ), keysize ) ]
-
-        # # Calculates the normalized hamming distance between the first 2 blocks
-        # distance = hamming_distance ( blocks[0], blocks[1] ) / keysize
-
-        distA = hamming_distance ( blocks[0], blocks[1] ) / keysize
-        distB = hamming_distance ( blocks[1], blocks[2] ) / keysize
-
-        distance = ( distA + distB ) / 2
-
-        probability[keysize] = ( distance, blocks )
-
-    probability = list ( { k: v for k, v in sorted ( probability.items (), key = lambda item: item[1] ) }.items () )[:10]
-
-    # Loops through the 10 most probable keysizes
-    plaintexts = {}
-    keys = {}
-    for keysize, prob in probability:
-
-        decrypted_bytes = []
-
-        plaintext = ""
-        key = None
-
-        for x in range ( keysize ):
-            
-            byte_at_x = bytearray ()
-
-            for block in prob[1]:
-
-                if not len ( block ) < keysize:
-                    byte_at_x.append ( block[x] )
-
-            data = find_key ( byte_at_x )
-
-            decrypted_bytes.append ( data["plaintext"] )
-
-        for x in range ( len ( decrypted_bytes[0] ) ):
-            for y in range ( keysize ):
-                plaintext += chr ( decrypted_bytes[y][x] )
-
-        plaintexts[plaintext] = calculate_probability ( bytes ( plaintext, "utf-8" ) )
+    return best_key
 
 
-    return max ( plaintexts, key=plaintexts.get )
+def decrypt_rotating_xor(ciphertext: bytes) -> tuple[bytes, bytes]:
+    '''
+    Decrypt a ciphertext encrypted with the repeating key XOR algorithm.
+
+    Returns:
+    - key
+    - plaintext
+    '''
+
+    key = bytearray()
+    best_key_size, _ = find_key_size(ciphertext)
+
+    for x in range(best_key_size):
+        block = [ciphertext[b] for b in range(x, len(ciphertext), best_key_size)]
+        key_byte = find_single_byte_xor_key(block)
+        key.append(int(key_byte))
+
+    key = bytes(key)
+
+    return key, xor(ciphertext, key)
 
 
-if len ( sys.argv ) > 1:
-    print ( main ( sys.argv[1] ) )
+def main(input_path=os.getcwd() + "/challenge-6.txt"):
+    ciphertext = base64.b64decode(open(input_path, "r").read().encode("ascii"))
+    key, plaintext = decrypt_rotating_xor(ciphertext)
 
-else:
-    print ( main () )
+    print('=' * 20)
+    print('Key:', key)
+    print('Key Length:', len(key))
+    print('Input Length: ', len(ciphertext), '\tOutput Length: ', len(plaintext))
+    print('=' * 20)
+    print(plaintext.decode('utf-8'))
+
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        main(sys.argv[1])
+    else:
+        main()
