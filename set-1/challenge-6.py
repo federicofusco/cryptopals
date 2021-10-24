@@ -28,7 +28,7 @@ def xor(x: bytes, y: bytes) -> bytes:
     y *= 1 + (len(x) // len(y))
     y = y[:len(x)]
 
-    return bytearray(a ^ b for a, b in zip(x, y))
+    return bytes(a ^ b for a, b in zip(x, y))
 
 # Calculates the hamming distance between two bytes
 
@@ -82,11 +82,9 @@ def calculate_probability(plaintext: str) -> float:
                 if char == char.lower():
                     probability += frequency[char]
                 else:
-
                     # Accounts for uppercase characters
                     probability += frequency[char.lower()] * 0.75
             except:
-
                 continue
 
     return probability
@@ -194,8 +192,30 @@ def main(input_path=os.getcwd() + "/challenge-6.txt"):
 
 
 
+import unittest
+
+class Challenge6Tests(unittest.TestCase):
+
+    def test_xor(self):
+        self.assertEqual(xor(b'\xf0\xf0\xf0\xf0', b'\x0f\x0f\x0f\x0f'), b'\xff\xff\xff\xff')
+        str1 = b'lorem ipsum dolor sit amet'
+        key = b'yellow submarine'
+
+        bits = 0
+        for b in xor(str1, str1):
+            bits += bin(b).count("1")
+        self.assertEqual(bits, 0)
+
+        self.assertEqual(xor(xor(str1, key), key), str1)
+
+    def test_hamming_distance(self):
+        self.assertEqual(hamming_distance(b'this is a test', b'wokka wokka!!!'), 37)
+
+
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         main(sys.argv[1])
     else:
         main()
+
+    unittest.main()
