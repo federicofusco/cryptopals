@@ -1,43 +1,9 @@
-use bitvec::prelude::*;
 use crate::errors::{ Base64Error, Base64Result };
+use bitvec::prelude::*;
 
-pub struct Base64 {}
+pub struct Base64 {} 
 
 impl Base64 {
-
-    /// Removes the 0x prefix from a hex string
-    fn strip_hex_prefix ( s: &mut str ) -> &mut str {
-        if s.starts_with( "0x" ) {
-
-            // Removes the prefix
-            return &mut s[2..];
-        }
-
-        s
-    }
-
-    /// Converts a hex string to a vector of bytes
-    fn hex_to_bytes ( mut s: &mut str ) -> Base64Result<Vec<u8>> {
-        if s.len () % 2 == 0 {
-
-            // Removes the prefix
-            let hex = Self::strip_hex_prefix ( &mut s );
-            
-            Ok ( (0..hex.len ())
-                .step_by ( 2 )
-                .map (|i| hex.get ( i..i + 2 )
-                    .and_then (|sub| u8::from_str_radix ( sub, 16 ).ok () ) 
-                    .expect ( "Invalid hex value!" )
-                )
-                .collect () 
-            )
-
-        } else {
-
-            // Hex string length wasn't multiple of two
-            Err ( Base64Error::InvalidHexString )
-        }
-    }
 
     /// Converts a bit vector a a vector of base64 encoded bytes
     fn bitvec_to_base64 ( bitvec: &mut BitVec<u8, Msb0> ) -> Base64Result<Vec<u8>> {
@@ -46,7 +12,7 @@ impl Base64 {
         let pad_length = 6 - bitvec.len () % 6;
         if pad_length != 6 {
             for _ in 0..pad_length {
-                bitvec.push ( false );
+                bitvec.push ( false ); 
             }
         } 
 
@@ -99,15 +65,15 @@ impl Base64 {
     pub fn from_hex ( mut hex: String ) -> Base64Result<String> {
 
         // Converts the hex string into a bit vector
-        let bytevec = Self::hex_to_bytes ( hex.as_mut_str () )?;
+        let bytevec = hex::decode ( &mut hex )?; 
         let mut bitvec: BitVec::<_, Msb0> = BitVec::from_slice ( &bytevec[..] );
-
+ 
         // Splits the bitvec into groups of six
         let bytevec_base64: Vec<u8> = Self::bitvec_to_base64 ( &mut bitvec )?
             .into_iter ()
             .map (|i| Self::base64_lookup ( i ).expect ( "Invalid hex values!" ) )
             .collect ();
 
-        Ok ( String::from_utf8_lossy ( &bytevec_base64 ).to_string () )
+        Ok ( String::from_utf8 ( bytevec_base64 )?.to_string () ) 
     }
 }

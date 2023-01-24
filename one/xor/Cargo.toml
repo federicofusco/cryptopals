@@ -1,0 +1,9 @@
+[package]
+name = "xor"
+description = "My solution to the second challenge"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "*", features = ["cargo"] }
+hex = { version = "0.4.3" }

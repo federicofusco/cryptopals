@@ -1,8 +1,0 @@
-[package]
-name = "challenge-one"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-bitvec = { version = "1.0.1" }
-clap = { version = "*", features = ["cargo"] }

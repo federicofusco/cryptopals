@@ -1,0 +1,10 @@
+# This folder contains all of my solutions to each challenge
+
+# Challenge 1 -> base64
+# Challenge 2 -> xor
+
+[workspace]
+members = [
+    "base64", 
+    "xor",
+]
