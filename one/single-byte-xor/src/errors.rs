@@ -24,3 +24,9 @@ impl From<XorError> for SBXorError {
         Self::XOR
     }
 }
+
+impl From<std::io::Error> for SBXorError {
+    fn from ( _error: std::io::Error ) -> Self { 
+        Self::ProbabilityCalc
+    }
+}

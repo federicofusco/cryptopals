@@ -1,0 +1,9 @@
+[package]
+name = "detect-sbxor"
+description = "My solution to the fourth challenge"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "*", features = ["cargo"] }
+single-byte-xor = { version = "0.1.0", path = "../single-byte-xor" }
