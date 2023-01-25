@@ -1,7 +1,7 @@
-use xor::{ Xor, XorResult };
+use xor::Xor;
 use clap::{ Command, arg };
 
-fn main () -> XorResult<()> {
+fn main () {
 
     // Sets CLI options
     let matches = Command::new ( "Challenge Two - XOR")
@@ -13,15 +13,15 @@ fn main () -> XorResult<()> {
         .get_matches ();
 
     let lvalue = hex::decode ( matches.get_one::<String> ("lvalue")
-        .expect ( "The --lvalue option is required!" ) )?;
+        .expect ( "The --lvalue option is required!" ) )
+        .expect ( "The --lvalue wasn't a valid hex input!" );
 
     let rvalue = hex::decode ( matches.get_one::<String> ( "rvalue" )
-        .expect ( "The --rvalue option is required!" ) )?;
+        .expect ( "The --rvalue option is required!" ) )
+        .expect ( "The --rvalue wasn't a valid hex input!" );
 
-    let xor: Vec<u8> = Xor::hex ( lvalue, rvalue )?;
+    let xor: Vec<u8> = Xor::hex ( lvalue, rvalue );
 
     println!("XOR hex output: {:?}", hex::encode ( xor.clone () ) );
     println!("XOR String output: {:?}", String::from_utf8 ( xor ).unwrap ());
-
-    Ok (())
 }

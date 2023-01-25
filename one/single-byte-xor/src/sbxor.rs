@@ -84,7 +84,7 @@ impl SBXor {
             key.fill ( x );
         
             // XORs the input
-            let xor = Xor::hex ( ciphertext.clone (), key.clone () )?;
+            let xor = Xor::hex ( ciphertext.clone (), key.clone () );
             let possible_plaintext = String::from_utf8_lossy ( &xor[..] ).to_string ();
             let probability = ( Self::probability ( possible_plaintext.clone ().as_str () ) * 100.0 ) as u32;
             tree.insert ( probability, possible_plaintext );

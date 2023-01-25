@@ -8,7 +8,7 @@ fn main () -> SBXorResult<()> {
     let matches = Command::new ( "Challenge Four - Detecting SBX")
         .version ( "0.1.0" )
         .author ( "Federico Fusco" )
-        .about ( "XOR's two hex values" )
+        .about ( "Detects and bruteforces a list of XOR ciphertexts" )
         .arg ( arg! ( -F --file <VALUE> "The file path which contains the ciphertexts" ).required ( true ) )
         .get_matches ();
 
