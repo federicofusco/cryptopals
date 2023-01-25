@@ -1,13 +1,9 @@
 use crate::errors::*;
-
 pub struct Xor {}
  
 impl Xor {
 
-    pub fn hex ( mut lvalue: String, mut rvalue: String ) -> XorResult<Vec<u8>> {
-
-        let lvalue = hex::decode ( &mut lvalue )?;
-        let rvalue = hex::decode ( &mut rvalue )?;
+    pub fn hex ( lvalue: Vec<u8>, rvalue: Vec<u8> ) -> XorResult<Vec<u8>> {
 
         let xor: Vec<u8> = lvalue 
             .iter ()

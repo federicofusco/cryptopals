@@ -2,9 +2,11 @@
 
 # Challenge 1 -> base64
 # Challenge 2 -> xor
+# Challenge 3 -> single-byte-xor
 
 [workspace]
 members = [
     "base64", 
     "xor",
+    "single-byte-xor",
 ]
