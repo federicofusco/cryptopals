@@ -5,6 +5,7 @@
 # Challenge 3 -> single-byte-xor
 # Challenge 4 -> detect-sbxor
 # Challenge 5 -> repeating-xor
+# Challenge 6 -> break-repeating-xor
 
 [workspace]
 members = [
@@ -13,4 +14,5 @@ members = [
     "single-byte-xor",
     "detect-sbxor",
     "repeating-xor",
+    "break-repeating-xor",
 ]

@@ -18,7 +18,7 @@ fn main () {
     let key = matches.get_one::<String> ( "key" )
         .expect ( "The --key option is required!" ).as_bytes ().to_vec ();
 
-    let ciphertext = Xor::repeated ( plaintext, key );
+    let ciphertext = Xor::variable_vec ( plaintext, key );
 
     println!("XOR Output: {:?}", hex::encode ( ciphertext ) );
 }

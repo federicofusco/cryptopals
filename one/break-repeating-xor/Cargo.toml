@@ -1,0 +1,10 @@
+[package]
+name = "break-repeating-xor"
+description = "My solution to the sixth challenge"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bitvec = { version = "1.0.1" }
+clap = { version = "*", features = ["cargo"] }
+xor = { version = "0.1.0", path = "../xor" }

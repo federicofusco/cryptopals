@@ -30,6 +30,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "break-repeating-xor"
+version = "0.1.0"
+dependencies = [
+ "bitvec",
+ "clap",
+ "xor",
+]
+
+[[package]]
 name = "cc"
 version = "1.0.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -314,6 +323,7 @@ dependencies = [
 name = "xor"
 version = "0.1.0"
 dependencies = [
+ "bitvec",
  "clap",
  "hex",
 ]
