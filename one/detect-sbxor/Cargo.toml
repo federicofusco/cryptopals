@@ -6,4 +6,5 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "*", features = ["cargo"] }
-single-byte-xor = { version = "0.1.0", path = "../single-byte-xor" }
+xor = { version = "0.1.0", path = "../xor" }
+hex = { version = "0.4.3" }

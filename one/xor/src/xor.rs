@@ -2,6 +2,8 @@ use std::collections::btree_map::Entry::*;
 use std::collections::BTreeMap;
 use bitvec::prelude::*;
 use crate::errors::*;
+use std::io::BufRead;
+use std::io::Lines;
 
 pub struct Xor {}
  
@@ -125,5 +127,63 @@ impl Xor {
         }
 
         Ok ( distance )
+    }
+
+    /// Brutforces an XORed input (single byte)
+    /// 
+    /// Returns a tuple containing the probability of it being correct (english)
+    /// and the plaintext
+    pub fn single_byte_bruteforce ( ciphertext: Vec<u8> ) -> XorResult<(u32, Vec<u8>)> {
+        let mut key = vec![0u8; ciphertext.len()];
+        let mut tree: BTreeMap<u32, Vec<u8>> = BTreeMap::new ();
+
+        // XORs every key
+        for x in 0..u8::MAX {
+
+            // Generates the key
+            key.fill ( x );
+        
+            // XORs the input
+            let xor = Xor::variable_vec ( ciphertext.clone (), key.clone () );
+            let possible_plaintext = String::from_utf8_lossy ( &xor[..] ).to_string ();
+            let probability = ( Xor::probability ( possible_plaintext.clone ().as_str () ) * 100.0 ) as u32;
+            tree.insert ( probability, xor );
+        }
+
+        // Gets the result with the highest probability
+        let plaintext = tree
+            .into_iter ()
+            .max_by_key(|p| p.clone ().0 )
+            .ok_or( XorError::ProbabilityCalc )?;
+
+        Ok ( plaintext )
+    }
+
+    /// Bruteforces a series of single byte XOR ciphertexts and returns
+    /// the ciphertext with the highest probability
+    pub fn single_byte_bruteforce_list<T: BufRead> ( ciphertexts: Lines<T>, hex: bool ) -> XorResult<(u32, Vec<u8>)> {
+
+        // Creates a BTreeMap to store the possible plaintexts
+        let mut tree: BTreeMap<u32, Vec<u8>> = BTreeMap::new ();
+    
+        // Loops through the ciphertexts
+        for ciphertext in ciphertexts {
+
+            // Bruteforces the ciphertext
+            let (probability, possible_plaintext): (u32, Vec<u8>);
+            if hex {
+                (probability, possible_plaintext) = Self::single_byte_bruteforce ( hex::decode ( ciphertext? )? )?;
+            } else {
+                (probability, possible_plaintext) = Self::single_byte_bruteforce ( ciphertext?.into () )?;
+            }
+            tree.insert ( probability, possible_plaintext );
+        }
+
+        let plaintext = tree 
+            .into_iter () 
+            .max_by_key(|p| p.clone ().0 )
+            .ok_or ( XorError::ProbabilityCalc )?;
+
+        Ok ( plaintext )
     }
 }

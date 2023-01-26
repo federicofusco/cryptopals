@@ -72,7 +72,8 @@ name = "detect-sbxor"
 version = "0.1.0"
 dependencies = [
  "clap",
- "single-byte-xor",
+ "hex",
+ "xor",
 ]
 
 [[package]]

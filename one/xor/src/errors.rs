@@ -11,6 +11,8 @@ pub enum XorError {
     HexConversion,
     /// Something went wrong while converting from UTF-8
     Utf8Conversion,
+    /// Something went wrong during the probability calculation
+    ProbabilityCalc,
 }
 
 pub type XorResult<T> = Result<T, XorError>;
