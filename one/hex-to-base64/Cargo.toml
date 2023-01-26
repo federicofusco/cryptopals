@@ -1,5 +1,5 @@
 [package]
-name = "base64"
+name = "hex-to-base64"
 description = "The solution to first challenge"
 version = "0.1.0"
 edition = "2021"
@@ -8,3 +8,4 @@ edition = "2021"
 bitvec = { version = "1.0.1" }
 clap = { version = "*", features = ["cargo"] }
 hex = { version = "0.4.3" }
+base64 = { version = "0.1.0", path = "../lib/base64" } 

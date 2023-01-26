@@ -36,10 +36,10 @@ fn main () -> Base64Result<()> {
         // Base64 encodes the input
         let base64: Vec<u8>;
         if hex {
-            base64 = Base64::encode ( hex::decode ( encode )? )?;
+            base64 = Base64::encode ( hex::decode ( encode ).expect ( "Failed to convert to hex!" ) )?;
         } else {
             base64 = Base64::encode ( encode.as_bytes ().to_vec () )?;
-        }
+        } 
 
         println!("Encoded output: {:?}", String::from_utf8 ( base64 )? ); 
     }
@@ -50,7 +50,7 @@ fn main () -> Base64Result<()> {
         // Base64 decodes the input
         let base64: Vec<u8>;
         if hex {
-            base64 = Base64::decode ( hex::decode ( decode )? )?;
+            base64 = Base64::decode ( hex::decode ( decode ).expect ( "Failed to convert from hex!" ) )?;
         } else {
             base64 = Base64::decode ( decode.as_bytes ().to_vec () )?;
         }

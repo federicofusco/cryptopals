@@ -6,5 +6,5 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "*", features = ["cargo"] }
-xor = { version = "0.1.0", path = "../xor" }
+xor = { version = "0.1.0", path = "../lib/xor" }
 hex = { version = "0.4.3" }

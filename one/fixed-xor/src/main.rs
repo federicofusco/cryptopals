@@ -31,7 +31,7 @@ fn main () -> XorResult<()> {
             .long ( "output" )
             .require_equals ( true )
             .value_parser (["hex", "utf"])
-            .help ( "The output format which should be returned" )
+            .help ( "The output format which should be returned" ) 
         )
         .get_matches ();
 

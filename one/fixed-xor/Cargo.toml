@@ -1,10 +1,11 @@
 [package]
-name = "single-byte-xor"
-description = "My solution to the third challenge"
+name = "fixed-xor"
+description = "My solution to the second challenge"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 clap = { version = "*", features = ["cargo"] }
 hex = { version = "0.4.3" }
+bitvec = { version = "1.0.1" }
 xor = { version = "0.1.0", path = "../lib/xor" }

@@ -1,18 +1,12 @@
 # This folder contains all of my solutions to each challenge
 
-# Challenge 1 -> base64
-# Challenge 2 -> xor
-# Challenge 3 -> single-byte-xor
-# Challenge 4 -> detect-sbxor
-# Challenge 5 -> repeating-xor
-# Challenge 6 -> break-repeating-xor
-
 [workspace]
 members = [
-    "base64", 
-    "xor",
+    "lib/*", 
+    "hex-to-base64",
+    "fixed-xor",
     "single-byte-xor",
-    "detect-sbxor",
+    "detect-single-byte-xor",
     "repeating-xor",
     "break-repeating-xor",
 ]

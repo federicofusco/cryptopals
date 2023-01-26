@@ -1,4 +1,3 @@
-use hex::FromHexError;
 use std::{ string::FromUtf8Error, num::TryFromIntError };
 
 #[derive(Copy, Clone, Debug)]
@@ -12,12 +11,6 @@ pub enum Base64Error {
 } 
 
 pub type Base64Result<T> = Result<T, Base64Error>;
-
-impl From<FromHexError> for Base64Error {
-    fn from (_error: FromHexError) -> Self {
-        Self::HexConversion
-    }
-}
 
 impl From<FromUtf8Error> for Base64Error {
     fn from ( _error: FromUtf8Error ) -> Self { 
