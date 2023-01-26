@@ -1,79 +1,104 @@
 use crate::errors::{ Base64Error, Base64Result };
 use bitvec::prelude::*;
 
+const BASE64_LOOKUP_TABLE: [char; 64] = [
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+    'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 
+    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 
+    'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 
+    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 
+    'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 
+    'w', 'x', 'y', 'z', '0', '1', '2', '3', 
+    '4', '5', '6', '7', '8', '9', '+', '/',
+];
+
 pub struct Base64 {} 
 
 impl Base64 {
 
-    /// Converts a bit vector a a vector of base64 encoded bytes
-    fn bitvec_to_base64 ( bitvec: &mut BitVec<u8, Msb0> ) -> Base64Result<Vec<u8>> {
+    /// Performs a lookup on the base64 lookup table O(n)
+    fn lookup ( index: u8 ) -> Base64Result<u8> {
+        Ok ( *BASE64_LOOKUP_TABLE.get ( index as usize ).ok_or ( Base64Error::LookupFailed )? as u8 )
+    }
 
-        // Pads the bitvector
-        let pad_length = 6 - bitvec.len () % 6;
-        if pad_length != 6 {
-            for _ in 0..pad_length {
-                bitvec.push ( false ); 
-            }
-        } 
+    // Performs a reverse lookup on the base64 lookup table O(n)
+    fn reverse_lookup ( output: u8 ) -> Base64Result<u8> {
+        if output == '=' as u8 {
+            return Ok ( 65 );
+        }
 
-        // Splits it into 6 bit groups
-        let mut base64: Vec<u8> = vec![];
-        for x in 0..bitvec.len () {
-            
-            // Skips iterations between groups of 6
-            if x % 6 != 0 {
-                continue;
-            }
-            
+        Ok ( BASE64_LOOKUP_TABLE.iter ().position (|&x| x == output as char ).ok_or ( Base64Error::LookupFailed )?.try_into ()? )
+    }
+
+    /// Encodes a given vector of bytes to base64
+    pub fn encode ( input: Vec<u8> ) -> Base64Result<Vec<u8>> {
+
+        // Converts the input vector to a bit vector
+        let mut input: BitVec<u8, Msb0> = BitVec::from_vec ( input );
+
+        // Pads the bit vector
+        let mut padding_length = 0;
+        if input.len () % 6 != 0 {
+            padding_length = ( 6 - input.len () % 6 ) / 2;
+            for _ in 0..6 - input.len () % 6 {
+                input.push ( false );
+            } 
+        }
+
+        // Gets the sextets
+        let mut output: Vec<u8> = vec![];
+        for x in (0..input.len ()).step_by ( 6 ) { 
             let mut byte: u8 = 0;
-            for y in 0..6 {
-                let i = x + y;
-                byte = ( byte << 1 ) | ( *bitvec.get(i).ok_or_else ( || Base64Error::Overflow )? as u8 ); 
+            for y in x..x + 6 {
+                byte = (byte << 1) | (input[y] as u8);
             }
-            base64.push ( byte );
+            output.push ( Self::lookup ( byte )? );
         }
 
-        Ok ( base64 )
+        // Appends the padding to the output
+        let mut padding: Vec<u8> = vec!['=' as u8; padding_length];
+        output.append ( &mut padding );
+
+        Ok ( output )
     }
 
-    /// Performs a lookup on the base64 lookup table with a given byte
-    fn base64_lookup ( byte: u8 ) -> Base64Result<u8> {
-        let table: [char; 64] = [
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-            'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 
-            'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 
-            'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 
-            'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 
-            'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 
-            'w', 'x', 'y', 'z', '0', '1', '2', '3', 
-            '4', '5', '6', '7', '8', '9', '+', '/',
-        ];
 
-        let char = table.get ( byte as usize );
-        if let Some ( value ) = char {
-            
-            // The table index is valid
-            Ok ( *value as u8 ) 
-        } else {
+    /// Decodes a base64 encoded vector to a vector of bytes
+    pub fn decode ( input: Vec<u8> ) -> Base64Result<Vec<u8>> {
 
-            // Invalid table index
-            Err ( Base64Error::LookupFailed )
+        // Strips the padding (if it's present)
+        let mut padding_length: usize = 0;
+        if let Some ( padding_pos ) = input.iter ().position (|&x| x == '=' as u8 ) {
+            padding_length = ( input.len () - padding_pos ) * 2;
         }
-    }
 
-    /// Converts a hex string to a base64 encoded string 
-    pub fn from_hex ( mut hex: String ) -> Base64Result<String> {
-
-        // Converts the hex string into a bit vector
-        let bytevec = hex::decode ( &mut hex )?; 
-        let mut bitvec: BitVec::<_, Msb0> = BitVec::from_slice ( &bytevec[..] );
- 
-        // Splits the bitvec into groups of six
-        let bytevec_base64: Vec<u8> = Self::bitvec_to_base64 ( &mut bitvec )?
+        // Performs a reverse lookup
+        let input: Vec<u8> = input
             .into_iter ()
-            .map (|i| Self::base64_lookup ( i ).expect ( "Invalid hex values!" ) )
+            .map (|x| Self::reverse_lookup ( x ).unwrap () )
             .collect ();
 
-        Ok ( String::from_utf8 ( bytevec_base64 )?.to_string () ) 
+        // Converts the output vector to a bit vector
+        let input: BitVec<u8, Msb0> = BitVec::from_vec ( input );
+
+        // Removes extra bits
+        let mut tmp_input: BitVec<u8, Msb0> = BitVec::EMPTY;
+        for x in (0..input.len ()).step_by ( 8 ) {
+            tmp_input.extend_from_bitslice ( &input[x + 2..x + 8] );
+        }
+        tmp_input = tmp_input[..tmp_input.len () - ( padding_length / 2 ) * 6].to_bitvec ();
+
+        // Gets the octets
+        let mut output: Vec<u8> = vec![];
+        for x in (0..tmp_input.len () - padding_length).step_by ( 8 ) {
+            let mut byte: u8 = 0;
+            for y in x..x + 8 {
+                byte = (byte << 1) | (tmp_input[y] as u8);
+            }
+            output.push ( byte );
+        }
+
+        Ok ( output )
     }
+
 }
