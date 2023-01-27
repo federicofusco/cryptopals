@@ -1,5 +1,5 @@
-mod xor;
 mod errors;
+mod xor;
 
-pub use xor::Xor as Xor;
-pub use errors::XorResult as XorResult;
+pub use errors::XorResult;
+pub use xor::Xor;

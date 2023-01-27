@@ -101,6 +101,7 @@ dependencies = [
 name = "fixed-xor"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "bitvec",
  "clap",
  "hex",

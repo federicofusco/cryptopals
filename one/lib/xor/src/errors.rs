@@ -18,19 +18,19 @@ pub enum XorError {
 pub type XorResult<T> = Result<T, XorError>;
 
 impl From<std::io::Error> for XorError {
-    fn from ( _error: std::io::Error ) -> Self {
+    fn from(_error: std::io::Error) -> Self {
         Self::IO
     }
 }
 
 impl From<FromHexError> for XorError {
-    fn from (_error: FromHexError) -> Self {
+    fn from(_error: FromHexError) -> Self {
         Self::HexConversion
     }
 }
 
 impl From<FromUtf8Error> for XorError {
-    fn from ( _error: FromUtf8Error ) -> Self { 
+    fn from(_error: FromUtf8Error) -> Self {
         Self::Utf8Conversion
     }
 }
