@@ -73,7 +73,7 @@ impl Xor {
     }
 
     /// XORs two vectors of equal length
-    pub fn vec ( lvalue: Vec<u8>, rvalue: Vec<u8> ) -> XorResult<Vec<u8>> {
+    pub fn vec ( lvalue: &Vec<u8>, rvalue: &Vec<u8> ) -> XorResult<Vec<u8>> {
 
         // Checks the vector lengths
         if lvalue.len () != rvalue.len () {
@@ -95,7 +95,7 @@ impl Xor {
     /// more "secure" (never use XOR for any level of security) 
     /// option is `variable_vec_secure`, which padds the vectors
     /// with random values 
-    pub fn variable_vec ( mut plaintext: Vec<u8>, key: Vec<u8> ) -> Vec<u8> {
+    pub fn variable_vec ( plaintext: &mut Vec<u8>, key: &Vec<u8> ) -> Vec<u8> {
         
         // Pads the plaintext
         if plaintext.len () % key.len () != 0 {
@@ -112,7 +112,7 @@ impl Xor {
     }
 
     /// Calculates the hamming distance between two bitvecs
-    pub fn hamming_distance ( lvalue: BitVec<u8, Lsb0>, rvalue: BitVec<u8, Lsb0> ) -> XorResult<u32> {
+    pub fn hamming_distance ( lvalue: &BitVec<u8, Lsb0>, rvalue: &BitVec<u8, Lsb0> ) -> XorResult<u32> {
 
         // Checks the vector lengths
         if lvalue.len () != rvalue.len () {
@@ -133,7 +133,7 @@ impl Xor {
     /// 
     /// Returns a tuple containing the probability of it being correct (english)
     /// and the plaintext
-    pub fn single_byte_bruteforce ( ciphertext: Vec<u8> ) -> XorResult<(u32, Vec<u8>)> {
+    pub fn single_byte_bruteforce ( ciphertext: &mut Vec<u8> ) -> XorResult<(u32, Vec<u8>)> {
         let mut key = vec![0u8; ciphertext.len()];
         let mut tree: BTreeMap<u32, Vec<u8>> = BTreeMap::new ();
 
@@ -144,9 +144,9 @@ impl Xor {
             key.fill ( x );
         
             // XORs the input
-            let xor = Xor::variable_vec ( ciphertext.clone (), key.clone () );
+            let xor = Self::variable_vec ( ciphertext, &key );
             let possible_plaintext = String::from_utf8_lossy ( &xor[..] ).to_string ();
-            let probability = ( Xor::probability ( possible_plaintext.clone ().as_str () ) * 100.0 ) as u32;
+            let probability = ( Self::probability ( possible_plaintext.clone ().as_str () ) * 100.0 ) as u32;
             tree.insert ( probability, xor );
         }
 
@@ -172,9 +172,9 @@ impl Xor {
             // Bruteforces the ciphertext
             let (probability, possible_plaintext): (u32, Vec<u8>);
             if hex {
-                (probability, possible_plaintext) = Self::single_byte_bruteforce ( hex::decode ( ciphertext? )? )?;
+                (probability, possible_plaintext) = Self::single_byte_bruteforce ( &mut hex::decode ( ciphertext? )? )?;
             } else {
-                (probability, possible_plaintext) = Self::single_byte_bruteforce ( ciphertext?.into () )?;
+                (probability, possible_plaintext) = Self::single_byte_bruteforce ( &mut ciphertext?.into () )?;
             }
             tree.insert ( probability, possible_plaintext );
         }
@@ -185,5 +185,78 @@ impl Xor {
             .ok_or ( XorError::ProbabilityCalc )?;
 
         Ok ( plaintext )
+    }
+
+    /// Divides the ciphertext into blocks of a given length
+    /// The last block is not guaranteed to be the specified length
+    pub fn block_ciphertext ( ciphertext: &Vec<u8>, block_length: usize ) -> Vec<Vec<u8>> {
+        let mut blocks: Vec<Vec<u8>> = vec![vec![]; ciphertext.len () / block_length + 1];
+        for x in (0..ciphertext.len ()).step_by ( block_length ) {
+            if ciphertext.len () - x < block_length {
+                blocks[(x as f64 / block_length as f64 ).ceil () as usize] = ciphertext[x..].to_vec ();
+                break;
+            }
+
+            blocks[( x as f64 / block_length as f64).ceil () as usize] = ciphertext[x..x + block_length].to_vec ();
+        }
+
+        blocks
+    }
+
+    /// Transposes a ciphertext by a given key length
+    /// This is useful for multiple byte XOR ciphertexts
+    pub fn transpose_blocks ( blocks: &Vec<Vec<u8>>, length: usize ) -> Vec<Vec<u8>> {
+        let mut transposed_blocks: Vec<Vec<u8>> = vec![vec![]; length];
+        for x in blocks.iter () {
+            for y in 0..x.len () {
+                let _ = &mut transposed_blocks[y].push ( x[y] );
+            }
+        }
+
+        transposed_blocks
+    }
+
+    /// Finds the most probable key length by calculating it's hamming distance
+    pub fn estimate_key_length ( ciphertext: &Vec<u8>, max_length: usize ) -> XorResult<usize> {
+        
+        // Loops through the "possible" key lengths
+        let mut key_lengths: BTreeMap<u32, usize> = BTreeMap::new ();
+        for possible_length in 1..max_length {
+            let sample_size = possible_length * 2;
+            let n_samples = ciphertext.len () / sample_size - 1;
+
+            // Calculates the length's score
+            let mut length_score: f64 = 0.0;
+            for x in 0..n_samples {
+                length_score += Self::hamming_distance (
+                    &BitVec::from_slice ( &ciphertext[x * sample_size..x * sample_size + possible_length] ), 
+                    &BitVec::from_slice ( &ciphertext[x * sample_size + possible_length..x * sample_size + possible_length * 2] )
+                )? as f64;
+            }
+
+            // Normalizes the score
+            length_score /= possible_length as f64;
+            length_score /= n_samples as f64;
+            key_lengths.insert ( ( length_score * 10_000.0 ) as u32, possible_length );
+        }
+
+        let probable_length = *key_lengths.get ( 
+            key_lengths
+                .keys ()
+                .next ()
+                .map (|prob| prob)
+                .ok_or ( XorError::ProbabilityCalc )?
+            )
+            .ok_or ( XorError::ProbabilityCalc )?;
+
+        Ok ( probable_length ) 
+    }
+
+    /// Bruteforces a vector of single byte XOR ciphertexts
+    pub fn bruteforce_blocks ( blocks: &mut Vec<Vec<u8>> ) -> Vec<Vec<u8>> {
+        blocks  
+            .into_iter ()
+            .map (|mut block| Self::single_byte_bruteforce ( &mut block ).expect ( "Failed to bruteforce block!" ).1 )
+            .collect ()
     }
 }

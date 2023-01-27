@@ -12,13 +12,13 @@ fn main () {
         .arg ( arg! ( -K --key <VALUE> "The key" ).required ( true ) )
         .get_matches ();
 
-    let plaintext = matches.get_one::<String> ("plaintext")
+    let mut plaintext = matches.get_one::<String> ("plaintext")
         .expect ( "The --plaintext option is required!" ).as_bytes ().to_vec ();
 
     let key = matches.get_one::<String> ( "key" )
         .expect ( "The --key option is required!" ).as_bytes ().to_vec ();
 
-    let ciphertext = Xor::variable_vec ( plaintext, key );
+    let ciphertext = Xor::variable_vec ( &mut plaintext, &key );
 
     println!("XOR Output: {:?}", hex::encode ( ciphertext ) );
 }

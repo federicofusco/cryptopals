@@ -7,4 +7,6 @@ edition = "2021"
 [dependencies]
 bitvec = { version = "1.0.1" }
 clap = { version = "*", features = ["cargo"] }
+base64 = { version = "0.1.0", path = "../lib/base64" }
+hex = { version = "0.4.3" }
 xor = { version = "0.1.0", path = "../lib/xor" }

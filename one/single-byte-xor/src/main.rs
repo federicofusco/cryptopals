@@ -38,9 +38,9 @@ fn main () -> XorResult<()> {
     // Bruteforces the ciphertext
     let (probability, plaintext): (u32, Vec<u8>);
     if hex {
-        (probability, plaintext) = Xor::single_byte_bruteforce ( hex::decode ( ciphertext )? )?;
+        (probability, plaintext) = Xor::single_byte_bruteforce ( &mut hex::decode ( ciphertext )? )?;
     } else {
-        (probability, plaintext) = Xor::single_byte_bruteforce ( ciphertext.as_bytes ().to_vec () )?;
+        (probability, plaintext) = Xor::single_byte_bruteforce ( &mut ciphertext.as_bytes ().to_vec () )?;
     }
 
     // Displays the plaintext

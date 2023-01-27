@@ -46,9 +46,9 @@ fn main () -> XorResult<()> {
     // XORs the values
     let xor: Vec<u8>;
     if hex {
-        xor = Xor::vec ( hex::decode ( lvalue )?, hex::decode ( rvalue )? )?;
+        xor = Xor::vec ( &hex::decode ( lvalue )?, &hex::decode ( rvalue )? )?;
     } else {
-        xor = Xor::vec ( lvalue.as_bytes ().to_vec (), rvalue.as_bytes ().to_vec () )?;
+        xor = Xor::vec ( &lvalue.as_bytes ().to_vec (), &rvalue.as_bytes ().to_vec () )?;
     }
 
     // Prints the output
