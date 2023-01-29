@@ -1,0 +1,11 @@
+[package]
+name = "aes"
+description = "My own implementation of the AES algorthm supporting 128, 192, and 256 bit keys"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+readme = ""
+keywords = ["aes", "crypto"]
+categories = ["algorithms", "cryptography", ]
+
+[dependencies]
