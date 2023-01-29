@@ -6,6 +6,6 @@ edition = "2021"
 license = "MIT"
 readme = ""
 keywords = ["aes", "crypto"]
-categories = ["algorithms", "cryptography", ]
+categories = ["algorithms", "cryptography",]
 
 [dependencies]

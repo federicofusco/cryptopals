@@ -3,6 +3,7 @@ use std::ops::{
     Shl, ShlAssign, Shr, ShrAssign, Sub, SubAssign,
 };
 
+/// Represents a number in a Galois field
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct GaloisField<T>(pub T);
 

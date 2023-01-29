@@ -2,7 +2,7 @@ use std::array::TryFromSliceError;
 
 use crate::galois::GaloisField;
 
-/// The AES SBOX
+/// The AES SBOX (this will be removed in the future)
 const S_BOX: [u8; 256] = [
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
     0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
@@ -20,6 +20,26 @@ const S_BOX: [u8; 256] = [
     0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e,
     0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
     0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16,
+];
+
+/// The AES inverse SBOX (this will be removed in the future)
+const INVERSE_S_BOX: [u8; 256] = [
+    0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
+    0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb,
+    0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e,
+    0x08, 0x2e, 0xa1, 0x66, 0x28, 0xd9, 0x24, 0xb2, 0x76, 0x5b, 0xa2, 0x49, 0x6d, 0x8b, 0xd1, 0x25,
+    0x72, 0xf8, 0xf6, 0x64, 0x86, 0x68, 0x98, 0x16, 0xd4, 0xa4, 0x5c, 0xcc, 0x5d, 0x65, 0xb6, 0x92,
+    0x6c, 0x70, 0x48, 0x50, 0xfd, 0xed, 0xb9, 0xda, 0x5e, 0x15, 0x46, 0x57, 0xa7, 0x8d, 0x9d, 0x84,
+    0x90, 0xd8, 0xab, 0x00, 0x8c, 0xbc, 0xd3, 0x0a, 0xf7, 0xe4, 0x58, 0x05, 0xb8, 0xb3, 0x45, 0x06,
+    0xd0, 0x2c, 0x1e, 0x8f, 0xca, 0x3f, 0x0f, 0x02, 0xc1, 0xaf, 0xbd, 0x03, 0x01, 0x13, 0x8a, 0x6b,
+    0x3a, 0x91, 0x11, 0x41, 0x4f, 0x67, 0xdc, 0xea, 0x97, 0xf2, 0xcf, 0xce, 0xf0, 0xb4, 0xe6, 0x73,
+    0x96, 0xac, 0x74, 0x22, 0xe7, 0xad, 0x35, 0x85, 0xe2, 0xf9, 0x37, 0xe8, 0x1c, 0x75, 0xdf, 0x6e,
+    0x47, 0xf1, 0x1a, 0x71, 0x1d, 0x29, 0xc5, 0x89, 0x6f, 0xb7, 0x62, 0x0e, 0xaa, 0x18, 0xbe, 0x1b,
+    0xfc, 0x56, 0x3e, 0x4b, 0xc6, 0xd2, 0x79, 0x20, 0x9a, 0xdb, 0xc0, 0xfe, 0x78, 0xcd, 0x5a, 0xf4,
+    0x1f, 0xdd, 0xa8, 0x33, 0x88, 0x07, 0xc7, 0x31, 0xb1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xec, 0x5f,
+    0x60, 0x51, 0x7f, 0xa9, 0x19, 0xb5, 0x4a, 0x0d, 0x2d, 0xe5, 0x7a, 0x9f, 0x93, 0xc9, 0x9c, 0xef,
+    0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
+    0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d,
 ];
 
 /// The supported key sizes
@@ -50,6 +70,7 @@ pub trait AesKeyOps<const N: usize, const N_ROUND_KEYS: usize> {
 /// This must always be 128 bits
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct AesRoundKey {
+    /// The raw key data
     data: [u32; 4],
 }
 
@@ -110,11 +131,13 @@ impl AesKeyOps<4, 11> for AesKey<4> {
     where
         AesRoundKey: Sized,
     {
+        /// R_CON, defined in the AES standard (FIPS-197)
         const R_CON: [u32; 0x0A] = [
             0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000, 0x20000000, 0x40000000,
             0x80000000, 0x1B000000, 0x36000000,
         ];
 
+        /// The number of words in a key
         const NK: usize = 0x04;
 
         let mut words = [0u32; 44];
@@ -163,11 +186,13 @@ impl AesKeyOps<6, 13> for AesKey<6> {
     where
         AesRoundKey: Sized,
     {
+        /// R_CON, defined in the AES standard (FIPS-197)
         const R_CON: [u32; 0x0A] = [
             0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000, 0x20000000, 0x40000000,
             0x80000000, 0x1B000000, 0x36000000,
         ];
 
+        /// The number of words in a key
         const NK: usize = 0x06;
 
         let mut words = [0u32; 13 * 4];
@@ -216,11 +241,13 @@ impl AesKeyOps<8, 15> for AesKey<8> {
     where
         AesRoundKey: Sized,
     {
+        /// R_CON, defined in the AES standard (FIPS-197)
         const R_CON: [u32; 0x0A] = [
             0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000, 0x20000000, 0x40000000,
             0x80000000, 0x1B000000, 0x36000000,
         ];
 
+        /// The number of words in a key
         const NK: usize = 0x08;
 
         let mut words = [0u32; 60];
@@ -281,7 +308,7 @@ impl Default for AesKey<8> {
     }
 }
 
-/// The AES internal state, this represents a 
+/// The AES internal state, this represents a
 /// 128 bit block of data (can be both) plain
 /// and cipher text
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default)]
@@ -295,16 +322,30 @@ pub trait AesStateOps<const N: usize> {
     fn set_row(&mut self, index: usize, row: [u8; N]);
     /// Performs a lookup on the AES SBOX with the given byte
     fn sub_byte(a: u8) -> u8;
+    /// Performs an inverse lookup on the AES SBOX with the given byte
+    fn inverse_sub_byte(a: u8) -> u8;
     /// Performs an SBOX lookup on the entire state
     fn sub_bytes(&mut self);
-    /// Shifts each row of the state
+    /// Performs an inverse SBOX lookup on the entire state
+    fn inverse_sub_bytes(&mut self);
+    /// Shifts each row of the state to the left
     fn shift_rows(&mut self);
+    /// Shifts each row of the state to the right
+    fn inverse_shift_rows(&mut self);
     /// Mixes a given column
     fn mix_column(a: u32) -> u32;
+    /// "Unmixes" a given column
+    fn inverse_mix_column(a: u32) -> u32;
     /// Mixes each column of the state
     fn mix_columns(&mut self);
+    /// "Unmixes" each column of the state
+    fn inverse_mix_columns(&mut self);
     /// XORs a given round key to the state
     fn add_round_key(&mut self, key: &AesRoundKey);
+    /// Performs a round on the state
+    fn round(&mut self, round_key: &AesRoundKey);
+    /// Performs an inverse round on the state
+    fn inverse_round(&mut self, round_key: &AesRoundKey);
 }
 
 impl AesStateOps<4> for AesState {
@@ -328,11 +369,25 @@ impl AesStateOps<4> for AesState {
         S_BOX[((a >> 4) * 16 + (a << 4 >> 4)) as usize]
     }
 
+    fn inverse_sub_byte(a: u8) -> u8 {
+        INVERSE_S_BOX[((a >> 4) * 16 + (a << 4 >> 4)) as usize]
+    }
+
     fn sub_bytes(&mut self) {
         for x in 0..4 {
             let mut row = self.0[x].to_be_bytes();
             for item in &mut row {
                 *item = Self::sub_byte(*item);
+            }
+            self.0[x] = u32::from_be_bytes(row);
+        }
+    }
+
+    fn inverse_sub_bytes(&mut self) {
+        for x in 0..4 {
+            let mut row = self.0[x].to_be_bytes();
+            for item in &mut row {
+                *item = Self::inverse_sub_byte(*item);
             }
             self.0[x] = u32::from_be_bytes(row);
         }
@@ -346,7 +401,16 @@ impl AesStateOps<4> for AesState {
         }
     }
 
+    fn inverse_shift_rows(&mut self) {
+        for x in 0..4 {
+            let mut row = self.row(x);
+            row.rotate_right(x);
+            self.set_row(x, row);
+        }
+    }
+
     fn mix_column(a: u32) -> u32 {
+        /// Multiplication matrix
         const MATRIX: [[u8; 4]; 4] = [
             [0x02, 0x03, 0x01, 0x01],
             [0x01, 0x02, 0x03, 0x01],
@@ -367,9 +431,37 @@ impl AesStateOps<4> for AesState {
         u32::from_be_bytes(tmp)
     }
 
+    fn inverse_mix_column(a: u32) -> u32 {
+        /// Inverse multiplication matrix
+        const INVERSE_MATRIX: [[u8; 4]; 4] = [
+            [0x0E, 0x0B, 0x0D, 0x09],
+            [0x09, 0x0E, 0x0B, 0x0D],
+            [0x0D, 0x09, 0x0E, 0x0B],
+            [0x0B, 0x0D, 0x09, 0x0E],
+        ];
+
+        let v = a.to_be_bytes();
+        let mut tmp: [u8; 4] = v;
+        for x in 0..4 {
+            tmp[x] = ((GaloisField::<u8>(v[0]) * INVERSE_MATRIX[x][0])
+                ^ (GaloisField::<u8>(v[1]) * INVERSE_MATRIX[x][1])
+                ^ (GaloisField::<u8>(v[2]) * INVERSE_MATRIX[x][2])
+                ^ (GaloisField::<u8>(v[3]) * INVERSE_MATRIX[x][3]))
+                .0;
+        }
+
+        u32::from_be_bytes(tmp)
+    }
+
     fn mix_columns(&mut self) {
         for x in 0..4 {
             self.0[x] = Self::mix_column(self.0[x]);
+        }
+    }
+
+    fn inverse_mix_columns(&mut self) {
+        for x in 0..4 {
+            self.0[x] = Self::inverse_mix_column(self.0[x]);
         }
     }
 
@@ -378,10 +470,24 @@ impl AesStateOps<4> for AesState {
             self.0[x] ^= key.data[x];
         }
     }
+
+    fn round(&mut self, round_key: &AesRoundKey) {
+        self.sub_bytes();
+        self.shift_rows();
+        self.mix_columns();
+        self.add_round_key(round_key);
+    }
+
+    fn inverse_round(&mut self, round_key: &AesRoundKey) {
+        self.add_round_key(round_key);
+        self.inverse_mix_columns();
+        self.inverse_shift_rows();
+        self.inverse_sub_bytes();
+    }
 }
 
 /// The AES Modes of operation
-/// Currently only ECB is supported 
+/// Currently only ECB is supported
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug, Default)]
 pub enum AesMode {
@@ -395,7 +501,7 @@ pub enum AesMode {
 }
 
 /// Handles the AES state
-/// This is responsible for encrypting or 
+/// This is responsible for encrypting or
 /// decrypting given data
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Aes {
@@ -406,17 +512,18 @@ pub struct Aes {
 }
 
 impl Aes {
-    fn round(&mut self, round_key: &AesRoundKey) {
-        self.state.sub_bytes();
-        self.state.shift_rows();
-        self.state.mix_columns();
-        self.state.add_round_key(round_key);
-    }
-
+    /// The final round for encrypting a block
     fn final_round(&mut self, round_key: &AesRoundKey) {
         self.state.sub_bytes();
         self.state.shift_rows();
         self.state.add_round_key(round_key);
+    }
+
+    /// The final round for decrypting a block
+    fn inverse_final_round(&mut self, round_key: &AesRoundKey) {
+        self.state.add_round_key(round_key);
+        self.state.inverse_shift_rows();
+        self.state.inverse_sub_bytes();
     }
 
     /// Loads raw data into the AES 128 bit state
@@ -426,6 +533,7 @@ impl Aes {
 
     /// Encrypts a block with a given key
     pub fn encrypt_block_128(&mut self, key: &AesKey<4>) {
+        /// The number of rounds
         const N_ROUNDS: usize = 0x0A;
 
         // Derives the round keys
@@ -436,13 +544,14 @@ impl Aes {
 
         // Executes rounds
         for x in 0..N_ROUNDS - 1 {
-            self.round(&round_keys[x + 1]);
+            self.state.round(&round_keys[x + 1]);
         }
         self.final_round(&round_keys[N_ROUNDS]);
     }
 
     /// Encrypts a block with a given key
     pub fn encrypt_block_192(&mut self, key: &AesKey<6>) {
+        /// The number of rounds
         const N_ROUNDS: usize = 0x0C;
 
         // Derives the round keys
@@ -453,13 +562,14 @@ impl Aes {
 
         // Executes rounds
         for x in 0..N_ROUNDS - 1 {
-            self.round(&round_keys[x + 1]);
+            self.state.round(&round_keys[x + 1]);
         }
         self.final_round(&round_keys[N_ROUNDS]);
     }
 
     /// Encrypts a block with a given key
     pub fn encrypt_block_256(&mut self, key: &AesKey<8>) {
+        /// The number of rounds
         const N_ROUNDS: usize = 0x0E;
 
         // Derives the round keys
@@ -470,9 +580,54 @@ impl Aes {
 
         // Executes rounds
         for x in 0..N_ROUNDS - 1 {
-            self.round(&round_keys[x + 1]);
+            self.state.round(&round_keys[x + 1]);
         }
         self.final_round(&round_keys[N_ROUNDS]);
+    }
+
+    /// Decrypts a block with the given key
+    pub fn decrypt_block_128(&mut self, key: &AesKey<4>) {
+        /// The number of rounds
+        const N_ROUNDS: usize = 0x0A;
+
+        // Derives the round keys
+        let round_keys = key.derive_round_keys();
+
+        self.inverse_final_round(&round_keys[N_ROUNDS]);
+        for x in (0..N_ROUNDS - 1).rev() {
+            self.state.inverse_round(&round_keys[x + 1]);
+        }
+        self.state.add_round_key(&round_keys[0]);
+    }
+
+    /// Decrypts a block with the given key
+    pub fn decrypt_block_192(&mut self, key: &AesKey<6>) {
+        /// The number of rounds
+        const N_ROUNDS: usize = 0x0C;
+
+        // Derives the round keys
+        let round_keys = key.derive_round_keys();
+
+        self.inverse_final_round(&round_keys[N_ROUNDS]);
+        for x in (0..N_ROUNDS - 1).rev() {
+            self.state.inverse_round(&round_keys[x + 1]);
+        }
+        self.state.add_round_key(&round_keys[0]);
+    }
+
+    /// Decrypts a block with the given key
+    pub fn decrypt_block_256(&mut self, key: &AesKey<8>) {
+        /// The number of rounds
+        const N_ROUNDS: usize = 0x0E;
+
+        // Derives the round keys
+        let round_keys = key.derive_round_keys();
+
+        self.inverse_final_round(&round_keys[N_ROUNDS]);
+        for x in (0..N_ROUNDS - 1).rev() {
+            self.state.inverse_round(&round_keys[x + 1]);
+        }
+        self.state.add_round_key(&round_keys[0]);
     }
 }
 
@@ -591,11 +746,28 @@ mod tests {
     }
 
     #[test]
+    fn state_128_inverse_sub_byte() {
+        assert_eq!(AesState::inverse_sub_byte(0x16), 0xFF);
+        assert_eq!(AesState::inverse_sub_byte(0x63), 0x00);
+        assert_eq!(AesState::inverse_sub_byte(0x98), 0xE2);
+        assert_eq!(AesState::inverse_sub_byte(0x21), 0x7B);
+    }
+
+    #[test]
     fn state_128_sub_bytes() {
         let mut state = AesState([0x01020304, 0x05060708, 0x090A0B0C, 0x0D0E0F00]);
         let result = AesState([0x7c777bf2, 0x6b6fc530, 0x01672bfe, 0xd7ab7663]);
 
         state.sub_bytes();
+        assert_eq!(state, result);
+    }
+
+    #[test]
+    fn state_128_inverse_sub_bytes() {
+        let mut state = AesState([0x7c777bf2, 0x6b6fc530, 0x01672bfe, 0xd7ab7663]);
+        let result = AesState([0x01020304, 0x05060708, 0x090A0B0C, 0x0D0E0F00]);
+
+        state.inverse_sub_bytes();
         assert_eq!(state, result);
     }
 
@@ -609,10 +781,26 @@ mod tests {
     }
 
     #[test]
+    fn state_128_inverse_shift_rows() {
+        let mut state = AesState([0xD4BF5D30, 0xE0B452AE, 0xB84111F1, 0x1E2798E5]);
+        let result = AesState([0xD42711AE, 0xE0BF98F1, 0xB8B45DE5, 0x1E415230]);
+
+        state.inverse_shift_rows();
+        assert_eq!(state, result);
+    }
+
+    #[test]
     fn state_128_mix_column() {
         assert_eq!(AesState::mix_column(0xDB135345), 0x8E4DA1BC);
         assert_eq!(AesState::mix_column(0xF20A225C), 0x9FDC589D);
         assert_eq!(AesState::mix_column(0x2D26314C), 0x4D7EBDF8);
+    }
+
+    #[test]
+    fn state_128_inverse_mix_column() {
+        assert_eq!(AesState::inverse_mix_column(0x8E4DA1BC), 0xDB135345);
+        assert_eq!(AesState::inverse_mix_column(0x9FDC589D), 0xF20A225C);
+        assert_eq!(AesState::inverse_mix_column(0x4D7EBDF8), 0x2D26314C);
     }
 
     #[test]
@@ -621,6 +809,15 @@ mod tests {
         let result = AesState([0x8E4DA1BC, 0x9FDC589D, 0x4D7EBDF8, 0xC6C6C6C6]);
 
         state.mix_columns();
+        assert_eq!(state, result);
+    }
+
+    #[test]
+    fn state_128_inverse_mix_columns() {
+        let mut state = AesState([0x8E4DA1BC, 0x9FDC589D, 0x4D7EBDF8, 0xC6C6C6C6]);
+        let result = AesState([0xDB135345, 0xF20A225C, 0x2D26314C, 0xC6C6C6C6]);
+
+        state.inverse_mix_columns();
         assert_eq!(state, result);
     }
 
@@ -655,6 +852,22 @@ mod tests {
     }
 
     #[test]
+    fn aes_decrypt_block_128() {
+        let key = AesKey::<4> {
+            size: KeySize::AES_128,
+            data: [0x2b7E1516, 0x28AED2A6, 0xABF71588, 0x09CF4F3C],
+        };
+
+        let result = AesState([0x3243F6A8, 0x885A308D, 0x313198A2, 0xE0370734]);
+
+        let mut aes = Aes::default();
+        aes.load_state(AesState([0x3925841D, 0x2DC09FB, 0xDC118597, 0x196A0B32]));
+        aes.decrypt_block_128(&key);
+
+        assert_eq!(aes.state, result);
+    }
+
+    #[test]
     fn aes_encrypt_block_192() {
         let key = AesKey::<6> {
             size: KeySize::AES_192,
@@ -668,6 +881,24 @@ mod tests {
         let mut aes = Aes::default();
         aes.load_state(AesState([0x00112233, 0x44556677, 0x8899AABB, 0xCCDDEEFF]));
         aes.encrypt_block_192(&key);
+
+        assert_eq!(aes.state, result);
+    }
+
+    #[test]
+    fn aes_decrypt_block_192() {
+        let key = AesKey::<6> {
+            size: KeySize::AES_192,
+            data: [
+                0x00010203, 0x04050607, 0x08090A0B, 0x0C0D0E0F, 0x10111213, 0x14151617,
+            ],
+        };
+
+        let result = AesState([0x00112233, 0x44556677, 0x8899AABB, 0xCCDDEEFF]);
+
+        let mut aes = Aes::default();
+        aes.load_state(AesState([0xDDA97CA4, 0x864CDFE0, 0x6EAF70A0, 0xEC0D7191]));
+        aes.decrypt_block_192(&key);
 
         assert_eq!(aes.state, result);
     }
@@ -687,6 +918,25 @@ mod tests {
         let mut aes = Aes::default();
         aes.load_state(AesState([0x00112233, 0x44556677, 0x8899AABB, 0xCCDDEEFF]));
         aes.encrypt_block_256(&key);
+
+        assert_eq!(aes.state, result);
+    }
+
+    #[test]
+    fn aes_decrypt_block_256() {
+        let key = AesKey::<8> {
+            size: KeySize::AES_256,
+            data: [
+                0x00010203, 0x04050607, 0x08090A0B, 0x0C0D0E0F, 0x10111213, 0x14151617, 0x18191A1B,
+                0x1C1D1E1F,
+            ],
+        };
+
+        let result = AesState([0x00112233, 0x44556677, 0x8899AABB, 0xCCDDEEFF]);
+
+        let mut aes = Aes::default();
+        aes.load_state(AesState([0x8EA2b7CA, 0x516745BF, 0xEAFC4990, 0x4B496089]));
+        aes.decrypt_block_256(&key);
 
         assert_eq!(aes.state, result);
     }
